@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS Assistant Chatbot</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f3f4f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.chat-container {
+    width: 400px;
+    background: white;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+}
+.chat-header {
+    background: #2563eb;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+.chat-box {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+.message {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 10px;
+}
+.user-message {
+    background: #2563eb;
+    color: white;
+    text-align: right;
+}
+.bot-message {
+    background: #eee;
+}
+.chat-input-area {
+    display: flex;
+}
+.chat-input {
+    flex: 1;
+    padding: 10px;
+}
+.send-btn {
+    padding: 10px;
+    background: #2563eb;
+    color: white;
+    border: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        CS EduBot <br>
+        <small>AI Assistant</small>
+    </div>
+
+    <div id="chat-box" class="chat-box">
+        <div class="message bot-message">
+            Hello! Ask me anything about Computer Science 🚀
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <input id="user-input" class="chat-input" placeholder="Ask something..." onkeypress="handleKeyPress(event)">
+        <button class="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("user-input");
+
+function handleKeyPress(e) {
+    if (e.key === "Enter") sendMessage();
+}
+
+function addMessage(text, className) {
+    const msg = document.createElement("div");
+    msg.className = "message " + className;
+    msg.innerText = text;
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return msg;
+}
+
+async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    addMessage(text, "user-message");
+    userInput.value = "";
+
+    const loading = addMessage("Typing...", "bot-message");
+
+    try {
+        const res = await fetch("http://localhost:5000/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: text })
+        });
+
+        const data = await res.json();
+
+        loading.remove();
+        addMessage(data.reply, "bot-message");
+
+    } catch (err) {
+        loading.remove();
+        addMessage("Error connecting to server", "bot-message");
+    }
+}
+</script>
+
+</body>
+</html>
